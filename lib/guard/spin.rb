@@ -22,12 +22,8 @@ module Guard
       runner.launch_spin("Reload")
     end
 
-    def run_all
-      runner.run_all
-    end
-
     def run_on_changes(paths)
-      runner.run(paths)
+      reload
     end
     # for guard 1.0.x and earlier
     alias :run_on_change :run_on_changes

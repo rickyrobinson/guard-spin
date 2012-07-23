@@ -14,37 +14,24 @@ module Guard
       end
 
       def launch_spin(action)
-        UI.info "#{action}ing Spin", :reset => true
-        spawn_spin spin_serve_command, spin_serve_options
+        UI.info "#{action}ing Spin Serve", :reset => true
+        start_spin
       end
 
       def kill_spin
         stop_spin
       end
 
-      def run(paths)
-        run_command spin_push_command(paths), spin_push_options
-      end
-
-      def run_all
-        return unless options[:run_all]
-        if rspec?
-          run(['spec'])
-        elsif test_unit?
-          run(Dir['test/**/*_test.rb']+Dir['test/**/test_*.rb'])
-        end
-      end
-
       private
-
-      def run_command(cmd, options = '')
-        system "#{cmd} #{options}"
-      end
 
       def spawn_spin(cmd, options = '')
         @spin_pid = fork do
           exec "#{cmd} #{options}"
         end
+      end
+      
+      def start_spin
+        spawn_spin spin_serve_command, spin_serve_options
       end
 
       def stop_spin
@@ -58,19 +45,12 @@ module Guard
           end
         rescue Errno::ECHILD
         end
-        UI.info "Spin Stopped", :reset => true
+        UI.info "Spin Serve Stopped", :reset => true
       end
-
-      def spin_push_command(paths)
-        cmd_parts = []
-        cmd_parts << "bundle exec" if bundler?
-        cmd_parts << "spin push"
-        cmd_parts << paths.join(' ')
-        cmd_parts.join(' ')
-      end
-
-      def spin_push_options
-        ''
+      
+      def restart_spin
+        stop_spin
+        start_spin
       end
 
       def spin_serve_command
@@ -97,6 +77,10 @@ module Guard
 
       def rspec?
         @rspec ||= options[:rspec] != false && File.exist?("#{Dir.pwd}/spec")
+      end
+      
+      def cucumber?
+        @cucumber ||= options[:cucumber] != false && File.exist?("#{Dir.pwd}/features")
       end
     end
   end
